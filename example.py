@@ -34,6 +34,8 @@ parser.add_argument('--debug', '-d', action='store_true',
 parser.add_argument('--framerecord', '-r', default=False, action='store_true',
                     help='(DEVELOPMENT ONLY) Records frame data from the match, stores into framedata.csv.')
 
+parser.add_argument("--iso", type=str, help="path to smash iso", default="../smash.iso")
+
 args = parser.parse_args()
 
 log = None
@@ -75,7 +77,7 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 #Run dolphin and render the output
-dolphin.run(render=True, iso_path="smash.iso")
+dolphin.run(render=True, iso_path=args.iso)
 
 #Plug our controller in
 #   Due to how named pipes work, this has to come AFTER running dolphin

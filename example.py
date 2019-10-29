@@ -15,6 +15,9 @@ def check_port(value):
     return ivalue
 
 chain = None
+# TODO based gamecount off log directory
+gamecount = 0
+doneWriting = False
 
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
 parser.add_argument('--port', '-p', type=check_port,
@@ -37,7 +40,7 @@ log = None
 if args.debug:
     log = melee.logger.Logger()
 
-framedata = melee.framedata.FrameData(args.framerecord)
+framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(gamecount)+".csv")
 
 #Options here are:
 #   "Standard" input is what dolphin calls the type of input that we use
@@ -72,7 +75,7 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 #Run dolphin and render the output
-dolphin.run(render=True)
+dolphin.run(render=True, iso_path="smash.iso")
 
 #Plug our controller in
 #   Due to how named pipes work, this has to come AFTER running dolphin
@@ -100,6 +103,7 @@ while True:
             melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
+        doneWriting = False
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
                                         gamestate=gamestate,
                                         port=args.port,
@@ -109,6 +113,11 @@ while True:
                                         start=True)
     #If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
+        if not doneWriting:
+            gamecount += 1
+            framedata.saverecording()
+            framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(gamecount)+".csv")
+            doneWriting = True
         melee.menuhelper.skippostgame(controller=controller)
     #If we're at the stage select screen, choose a stage
     elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:

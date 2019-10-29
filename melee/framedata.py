@@ -7,9 +7,9 @@ from itertools import filterfalse
 from collections import defaultdict
 
 class FrameData:
-    def __init__(self, write=False):
+    def __init__(self, write=False, output = 'logs/framedata.csv'):
         if write:
-            self.csvfile = open('framedata.csv', 'a')
+            self.csvfile = open(output, 'a')
             fieldnames = ['character', 'action', 'frame',
                 'hitbox_1_status', 'hitbox_1_size', 'hitbox_1_x', 'hitbox_1_y',
                 'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',

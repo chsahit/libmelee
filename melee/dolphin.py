@@ -38,7 +38,8 @@ class Dolphin:
             os.mkfifo(pipes_path)
 
         #setup the controllers specified
-        self.setup_controller(ai_port)
+        #self.setup_controller(ai_port)
+        self.setup_controller(ai_port, opponent_type)
         self.setup_controller(opponent_port, opponent_type)
 
     """Setup the necessary files for dolphin to recognize the player at the given

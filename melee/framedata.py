@@ -570,7 +570,7 @@ class FrameData:
                     and not self.isbmove(Character(row['character']), Action(row['action'])):
                 self.rows.remove(row)
 
-    def recordframe(self, gamestate):
+    '''def recordframe(self, gamestate):
         # First, adjust and record zero-indexing
         actionrow = {'character': gamestate.opponent_state.character.value, \
             'action': gamestate.opponent_state.action.value, \
@@ -637,7 +637,13 @@ class FrameData:
             'locomotion_y' : yspeed,
             'iasa' : gamestate.opponent_state.iasa,
             'facing_changed' : False,
-            'projectile' : False
+            'projectile' : False,
+            "self_percentage" : gamestate.ai_state.percent
+            "self_stock" : gamestate.ai_state.stock
+            "self_status:" : gamestate.ai_state.action.value
+            "opponent_percentage:" : gamestate.opponent_state.percent
+            "opponent_stock:" : gamestate.opponent_state.stock
+            "opponent_status:" : gamestate.oppoenent_state.action.value
             }
 
         # Do we already have the previous frame recorded?
@@ -706,7 +712,13 @@ class FrameData:
             self.rows.append(row)
 
         self.prevfacing[gamestate.opponent_state.action] = gamestate.opponent_state.facing
-        self.prevprojectilecount[gamestate.opponent_state.action] = len(gamestate.projectiles)
+        self.prevprojectilecount[gamestate.opponent_state.action] = len(gamestate.projectiles)'''
+
+    def recordframe(self, gamestate):
+        ai_state = gamestate.ai_state.tolist()
+        opponent_state =  gamestate.opponent_state.tolist()
+        row = ai_state + opponent_state
+        self.rows.append(row)
 
     def saverecording(self):
         self.cleanupcsv()

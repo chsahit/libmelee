@@ -3,6 +3,7 @@ import melee
 import argparse
 import signal
 import sys
+import time
 
 #This example program demonstrates how to use the Melee API to run dolphin programatically,
 #   setup controllers, and send button presses over to dolphin
@@ -15,8 +16,6 @@ def check_port(value):
     return ivalue
 
 chain = None
-# TODO based gamecount off log directory
-gamecount = 0
 doneWriting = False
 
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
@@ -42,7 +41,7 @@ log = None
 if args.debug:
     log = melee.logger.Logger()
 
-framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(gamecount)+".csv")
+framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(int(time.time()))+".csv")
 
 #Options here are:
 #   "Standard" input is what dolphin calls the type of input that we use
@@ -118,7 +117,7 @@ while True:
         if not doneWriting:
             gamecount += 1
             framedata.saverecording()
-            framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(gamecount)+".csv")
+            framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(int(time.time()))+".csv")
             doneWriting = True
         melee.menuhelper.skippostgame(controller=controller)
     #If we're at the stage select screen, choose a stage

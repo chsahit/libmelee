@@ -10,7 +10,7 @@ from collections import defaultdict
 class FrameData:
     def __init__(self, write=False, output = 'logs/framedata.csv'):
         if write:
-            self.csvfile = open(output, 'a')
+            self.csvfile = open(output, 'a+')
             fieldnames = ['character', 'action', 'frame',
                 'hitbox_1_status', 'hitbox_1_size', 'hitbox_1_x', 'hitbox_1_y',
                 'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',
@@ -554,23 +554,6 @@ class FrameData:
             return -1
         return max(frames)
 
-    #This is a helper function to remove all the non-attacking, non-rolling, non-B move actions
-    def cleanupcsv(self):
-        #Make a list of all the attacking action names
-        attacks = []
-        for row in self.rows:
-            if row['hitbox_1_status'] or row['hitbox_2_status'] or \
-                    row['hitbox_3_status'] or row['hitbox_4_status'] or \
-                    row['projectile']:
-                attacks.append(row['action'])
-        #remove duplicates
-        attacks = list(set(attacks))
-        #Make a second pass, removing anything not in the list
-        for row in list(self.rows):
-            if row['action'] not in attacks and not self.isroll(Character(row['character']), Action(row['action'])) \
-                    and not self.isbmove(Character(row['character']), Action(row['action'])):
-                self.rows.remove(row)
-
     def recordframe(self, gamestate):
         ai_state = gamestate.ai_state.tolist()
         opponent_state =  gamestate.opponent_state.tolist()
@@ -578,7 +561,6 @@ class FrameData:
         self.rows.append(row)
 
     def saverecording(self):
-        self.cleanupcsv()
         self.writer.writerows(self.rows)
         self.actionwriter.writerows(self.actionrows)
         self.csvfile.close()

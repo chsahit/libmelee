@@ -41,7 +41,8 @@ log = None
 if args.debug:
     log = melee.logger.Logger()
 
-framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(int(time.time()))+".csv")
+gamecount = 0
+framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + str(int(time.time()))+".csv")
 
 #Options here are:
 #   "Standard" input is what dolphin calls the type of input that we use
@@ -94,6 +95,9 @@ while True:
     #What menu are we in?
     if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
         if args.framerecord:
+            if doneWriting:
+                framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + str(int(time.time()))+".csv")
+                doneWriting = False
             framedata.recordframe(gamestate)
         #XXX: This is where your AI does all of its stuff!
         #This line will get hit once per frame, so here is where you read
@@ -104,7 +108,6 @@ while True:
             melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
-        doneWriting = False
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
                                         gamestate=gamestate,
                                         port=args.port,
@@ -114,10 +117,9 @@ while True:
                                         start=True)
     #If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
-        if not doneWriting:
+        if args.framerecord and not doneWriting:
             gamecount += 1
             framedata.saverecording()
-            framedata = melee.framedata.FrameData(args.framerecord, "logs/game-"+str(int(time.time()))+".csv")
             doneWriting = True
         melee.menuhelper.skippostgame(controller=controller)
     #If we're at the stage select screen, choose a stage

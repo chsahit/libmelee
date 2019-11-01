@@ -161,6 +161,8 @@ class Dolphin:
         if os.path.isdir(linux_path):
             return linux_path
 
+        print("get_home_path")
+        print(linux_path)
         print("ERROR: Are you sure Dolphin is installed? Make sure it is,\
                 and then run again.")
         sys.exit(1)
@@ -186,6 +188,8 @@ class Dolphin:
         if os.path.isdir(osx_path):
             return osx_path
 
+        print("Config_path")
+        print(linux_path)
         print("ERROR: Are you sure Dolphin is installed? Make sure it is,\
                 and then run again.")
         sys.exit(1)

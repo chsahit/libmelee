@@ -1,6 +1,7 @@
 import csv
 import os
 import math
+import time
 from melee.enums import Action, Character, AttackState
 from melee import stages
 from itertools import filterfalse
@@ -573,7 +574,7 @@ class FrameData:
     def recordframe(self, gamestate):
         ai_state = gamestate.ai_state.tolist()
         opponent_state =  gamestate.opponent_state.tolist()
-        row = ai_state + opponent_state
+        row = ai_state + opponent_state + [time.time()]
         self.rows.append(row)
 
     def saverecording(self):

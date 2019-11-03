@@ -1,9 +1,11 @@
 import csv
 import os
 import math
+import numpy as np
 import time
 from melee.enums import Action, Character, AttackState
 from melee import stages
+from melee.extract_data import parse_line, parse_actions
 from itertools import filterfalse
 from collections import defaultdict
 
@@ -554,9 +556,13 @@ class FrameData:
             return -1
         return max(frames)
 
-    def recordframe(self, gamestate):
+    def recordframe(self, gamestate, filename, num_actions):
         state = gamestate.tolist()
-        row = state + [time.time()]
+
+        action_file = open('logs/' + filename, 'r')
+        actions = parse_actions(action_file.readlines()[-5:-1], num_actions)
+
+        row = [time.time()] + state + actions.tolist()
         self.rows.append(row)
 
     def saverecording(self):

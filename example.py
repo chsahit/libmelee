@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import melee
 import argparse
+from os import listdir
 import signal
 import sys
 import time
@@ -42,7 +43,9 @@ if args.debug:
     log = melee.logger.Logger()
 
 gamecount = 0
-framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + str(int(time.time()))+".csv")
+curr_time = str(int(time.time()))
+framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + curr_time + ".csv")
+
 
 #Options here are:
 #   "Standard" input is what dolphin calls the type of input that we use
@@ -85,6 +88,20 @@ dolphin.run(render=True, iso_path=args.iso)
 #   dolphin will hang waiting for input and never receive it
 controller.connect()
 
+# Find Button Presses File
+found_file = False
+num_actions = 16
+while not found_file:
+    time.sleep(1)
+    filenames = listdir('logs/')
+    for filename in filenames:
+        if "keyboard_presses_" + curr_time in filename:
+            button_presses_filename = filename
+            print("Tracking file " + filename)
+            found_file = True
+            break
+        
+
 #Main loop
 while True:
     #"step" to the next frame
@@ -98,7 +115,8 @@ while True:
             if doneWriting:
                 framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + str(int(time.time()))+".csv")
                 doneWriting = False
-            framedata.recordframe(gamestate)
+            framedata.recordframe(gamestate, button_presses_filename, num_actions)
+            
         #XXX: This is where your AI does all of its stuff!
         #This line will get hit once per frame, so here is where you read
         #   in the gamestate and decide what buttons to push on the controller

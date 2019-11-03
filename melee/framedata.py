@@ -555,9 +555,8 @@ class FrameData:
         return max(frames)
 
     def recordframe(self, gamestate):
-        ai_state = gamestate.ai_state.tolist()
-        opponent_state =  gamestate.opponent_state.tolist()
-        row = ai_state + opponent_state + [time.time()]
+        state = gamestate.tolist()
+        row = state + [time.time()]
         self.rows.append(row)
 
     def saverecording(self):

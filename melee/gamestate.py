@@ -19,7 +19,6 @@ class GameState:
     stage_select_cursor_x = 0.0
     stage_select_cursor_y = 0.0
     ready_to_start = False
-    distance = 0.0
     sock = None
     processingtime = 0.0
     frametimestamp = 0.0
@@ -44,6 +43,8 @@ class GameState:
         #Helper names to keep track of us and our opponent
         self.ai_state = self.player[dolphin.ai_port]
         self.opponent_state = self.player[dolphin.opponent_port]
+        self.ai_port = dolphin.ai_port
+        self.opponent_port = dolphin.opponent_port
         #Read in the action data csv
         with open(path + "/actiondata.csv") as csvfile:
             #A list of dicts containing the frame data
@@ -77,12 +78,14 @@ class GameState:
     Only caring about in-game things, not menus and such"""
     def tolist(self):
         thelist = []
-        #I don't think that the frame is really relevant here...
-        #thelist.append(self.frame)
-        thelist.append(self.distance)
         thelist.append(self.stage.value)
-        thelist = thelist + self.ai_state.tolist()
-        thelist = thelist + self.opponent_state.tolist()
+
+        if self.ai_port < self.opponent_port:
+            thelist = thelist + self.ai_state.tolist()
+            thelist = thelist + self.opponent_state.tolist()
+        else:
+            thelist = thelist + self.opponent_state.tolist()
+            thelist = thelist + self.ai_state.tolist()
         #TODO: Figure out the best way to add projectiles to the list
         #thelist = thelist + self.projectiles.tolist()
         return thelist
@@ -185,10 +188,6 @@ class GameState:
                 if self.player[i].action != Action.DASHING:
                     self.player[i].moonwalkwarning = False
 
-            #TODO: This needs updating in order to support >2 players
-            xdist = self.ai_state.x - self.opponent_state.x
-            ydist = self.ai_state.y - self.opponent_state.y
-            self.distance = math.sqrt( (xdist**2) + (ydist**2) )
             self.fixiasa()
             self.fixframeindexing()
             return True
@@ -529,6 +528,7 @@ class PlayerState:
     """Produces a list representation of the player's state"""
     def tolist(self):
         thelist = []
+        thelist.append(self.character.value)
         thelist.append(self.x)
         thelist.append(self.y)
         thelist.append(self.percent)

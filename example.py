@@ -89,17 +89,18 @@ dolphin.run(render=True, iso_path=args.iso)
 controller.connect()
 
 # Find Button Presses File
-found_file = False
-num_actions = 16
-while not found_file:
-    time.sleep(1)
-    filenames = listdir('logs/')
-    for filename in filenames:
-        if "keyboard_presses_" + curr_time in filename:
-            button_presses_filename = filename
-            print("Tracking file " + filename)
-            found_file = True
-            break
+if args.framerecord:
+    found_file = False
+    num_actions = 16
+    while not found_file:
+        time.sleep(1)
+        filenames = listdir('logs/')
+        for filename in filenames:
+            if "keyboard_presses_" + curr_time in filename:
+                button_presses_filename = filename
+                print("Tracking file " + filename)
+                found_file = True
+                break
         
 
 #Main loop

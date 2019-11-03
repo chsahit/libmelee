@@ -559,11 +559,12 @@ class FrameData:
     def recordframe(self, gamestate, filename, num_actions):
         state = gamestate.tolist()
 
-        action_file = open('logs/' + filename, 'r')
-        actions = parse_actions(action_file.readlines()[-5:-1], num_actions)
+        with open('logs/' + filename, 'r') as action_file:
+            actions = parse_actions(action_file.read().splitlines()[-5:-1], num_actions)
+            # actions = parse_actions(action_file.readlines()[-5:-1], num_actions)
 
-        row = [time.time()] + state + actions.tolist()
-        self.rows.append(row)
+            row = [time.time()] + state + actions.tolist()
+            self.rows.append(row)
 
     def saverecording(self):
         self.writer.writerows(self.rows)

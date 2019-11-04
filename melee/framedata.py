@@ -5,7 +5,7 @@ import numpy as np
 import time
 from melee.enums import Action, Character, AttackState
 from melee import stages
-from melee.extract_data import parse_line, parse_actions
+from melee.extract_data import *
 from itertools import filterfalse
 from collections import defaultdict
 
@@ -556,21 +556,28 @@ class FrameData:
             return -1
         return max(frames)
 
-    def recordframe(self, gamestate, filename, num_actions):
+    def recordframe(self, gamestate):
         state = gamestate.tolist()
 
-        with open('logs/' + filename, 'r') as action_file:
-            actions = parse_actions(action_file.read().splitlines()[-5:-1], num_actions)
-            # actions = parse_actions(action_file.readlines()[-5:-1], num_actions)
+        row = [time.time()] + state
+        self.rows.append(row)
 
-            row = [time.time()] + state + actions.tolist()
-            self.rows.append(row)
+    def saverecording(self, filename):
+        # Add actions
+        actions = extract_actions(filename)
+        self.rows = merge_state_action(self.rows, actions)
 
-    def saverecording(self):
+        # Save Data
         self.writer.writerows(self.rows)
         self.actionwriter.writerows(self.actionrows)
         self.csvfile.close()
         self.actionfile.close()
+
+    def flush_button_presses(self, filename):
+        print("Emptying old button presses")
+        with open('logs/' + filename, 'r+') as action_file:
+            action_file.seek(0)
+            action_file.truncate()
 
     """
     How far will a character slide, given:

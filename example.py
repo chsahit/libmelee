@@ -29,10 +29,12 @@ parser.add_argument('--opponent', '-o', type=check_port,
 parser.add_argument('--live', '-l',
                     help='The opponent is playing live with a GCN Adapter',
                     default=True)
-parser.add_argument('--debug', '-d', action='store_true',
+parser.add_argument('--debug', '-d', default=False, action='store_true',
                     help='Debug mode. Creates a CSV of all game state')
 parser.add_argument('--framerecord', '-r', default=False, action='store_true',
-                    help='(DEVELOPMENT ONLY) Records frame data from the match, stores into framedata.csv.')
+                    help='(DEVELOPMENT ONLY) Records frame data from the match, stores into logs/')
+parser.add_argument('--flush', '-f', default=False, action='store_true',
+                    help='Empties button press file after every game')
 
 parser.add_argument("--iso", type=str, help="path to smash iso", default="../smash.iso")
 
@@ -41,11 +43,6 @@ args = parser.parse_args()
 log = None
 if args.debug:
     log = melee.logger.Logger()
-
-gamecount = 0
-curr_time = str(int(time.time()))
-framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + curr_time + ".csv")
-
 
 #Options here are:
 #   "Standard" input is what dolphin calls the type of input that we use
@@ -66,18 +63,6 @@ gamestate = melee.gamestate.GameState(dolphin)
 #Create our Controller object that we can press buttons on
 controller = melee.controller.Controller(port=args.port, dolphin=dolphin)
 
-def signal_handler(signal, frame):
-    dolphin.terminate()
-    if args.debug:
-        log.writelog()
-        print("") #because the ^C will be on the terminal
-        print("Log file created: " + log.filename)
-    print("Shutting down cleanly...")
-    if args.framerecord:
-        framedata.saverecording()
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
 
 #Run dolphin and render the output
 dolphin.run(render=True, iso_path=args.iso)
@@ -89,11 +74,13 @@ dolphin.run(render=True, iso_path=args.iso)
 controller.connect()
 
 # Find Button Presses File
+doneWriting = True
+curr_time = str(int(time.time()))
 if args.framerecord:
     found_file = False
     num_actions = 16
     while not found_file:
-        time.sleep(1)
+        time.sleep(5)
         filenames = listdir('logs/')
         for filename in filenames:
             if "keyboard_presses_" + curr_time in filename:
@@ -104,6 +91,7 @@ if args.framerecord:
         
 
 #Main loop
+gamecount = 0
 while True:
     #"step" to the next frame
     gamestate.step()
@@ -114,17 +102,16 @@ while True:
     if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
         if args.framerecord:
             if doneWriting:
-                framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + str(int(time.time()))+".csv")
+                framedata = melee.framedata.FrameData(args.framerecord, "logs/game" + str(gamecount) + "-" + str(int(time.time()))+ ".csv")
                 doneWriting = False
-            framedata.recordframe(gamestate, button_presses_filename, num_actions)
+
+            framedata.recordframe(gamestate)
+            
             
         #XXX: This is where your AI does all of its stuff!
         #This line will get hit once per frame, so here is where you read
         #   in the gamestate and decide what buttons to push on the controller
-        if args.framerecord:
-            melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
-        else:
-            melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
+        pass
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
@@ -134,18 +121,25 @@ while True:
                                         controller=controller,
                                         swag=True,
                                         start=True)
+
     #If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
         if args.framerecord and not doneWriting:
+            time.sleep(1)
             gamecount += 1
-            framedata.saverecording()
+            framedata.saverecording(button_presses_filename)
             doneWriting = True
+            if args.flush:
+                framedata.flush_button_presses(button_presses_filename)
+
         melee.menuhelper.skippostgame(controller=controller)
+
     #If we're at the stage select screen, choose a stage
     elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
         melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
                                     gamestate=gamestate,
                                     controller=controller)
+
     #Flush any button presses queued up
     controller.flush()
     if log:

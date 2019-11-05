@@ -69,7 +69,10 @@ def parse_line(line, array):
                 header = elem.split(':')[0]
                 split_values = split_values[1].split(',')
                 for ii in range(len(split_values)):
-                    array[GC_headers[header] + ii] = int(split_values[ii])
+                    if split_values[ii].isdigit():
+                        array[GC_headers[header] + ii] = int(split_values[ii])
+                    else:
+                        array[GC_headers[header] + ii] = 0
 
     return array
 
@@ -157,7 +160,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--action_file", type=str, help="path to GC actions", default="logs/keyboard_presses_XXXXXXXXXX.txt")
     parser.add_argument("--state_file", type=str, help="path to states", default="logs/gameX_XXXXXXXXXX.csv")
-    parser.add_argument('--test', '-r', default=False, action='store_true')
+    parser.add_argument('--test', '-t', default=False, action='store_true')
 
     args = parser.parse_args()
     main(args)

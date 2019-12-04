@@ -36,6 +36,7 @@ def parse_actions(actions_data, num_actions):
     for line in actions_data:
         if line[:4] == 'time':
             # time = int(float(line[6:]) * (10 ** precision))
+            print(line[6:])
             time = float(line[6:])
 
         elif line[:2] == 'P1':
@@ -45,7 +46,7 @@ def parse_actions(actions_data, num_actions):
         elif line[:2] == 'P2':
             p2 = np.zeros(num_actions)
             p2 = parse_line(line, p2)
-            
+
             if time != None and p1 is not None and p2 is not None:
                 row = np.hstack([time] + [p1] + [p2])
                 actions.append(row)
@@ -86,8 +87,8 @@ def find_csvs(file_path, num_states=32):
 
 # MERGE
 def merge_state_action(states, actions):
-    pd.set_option('precision', precision)  
-    
+    pd.set_option('precision', precision)
+
     # Actions
     actions = np.array(actions)
     print(actions.shape)
@@ -102,9 +103,9 @@ def merge_state_action(states, actions):
     action_times = actions[:, 0]
     action_idx = 0
     for ii in range(states.shape[0]):
-        
+
         value = states[ii, 0]
-        idx = find_nearest(action_times[action_idx:], value, threshold=.01)
+        idx = find_nearest(action_times[action_idx:], value, threshold=0.01)
 
         if idx > -1:
             state_indexes.append(ii)
@@ -122,7 +123,7 @@ def trunc(values, decs=0):
     return np.trunc(values*10**decs)/(10**decs)
 
 
-def find_nearest(array, value, threshold=1):
+def find_nearest(array, value, threshold=0.01):
     idx = np.searchsorted(array, value, side="left")
 
     if idx > 0 and idx < len(array):
@@ -153,7 +154,7 @@ def main(args):
             np.savetxt("logs/examples.csv", state_action, delimiter=",")
         else:
             np.savetxt(args.state_file, state_action, delimiter=",")
-    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract Data from Dolphin gamestate and GC actions')

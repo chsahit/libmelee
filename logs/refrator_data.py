@@ -28,18 +28,6 @@ if states.shape[1] == 33:
     stage_df[:] = 25
     stage_df = pd.DataFrame(data=stage_df)
 
-
-
-    # print(states)
-    # print(ai_states)
-    # print(opp_states)
-    # print(time)
-
-
-    # print(fox_df)
-    # print(stage_df)
-
-
     result = pd.concat([stage_df, fox_df, opp_states, fox_df, ai_states, time], axis=1, sort=False)
     print(result.iloc[:, :])
     if result.shape[1] == 36:

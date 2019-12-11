@@ -36,7 +36,6 @@ def parse_actions(actions_data, num_actions):
     for line in actions_data:
         if line[:4] == 'time':
             # time = int(float(line[6:]) * (10 ** precision))
-            print(line[6:])
             time = float(line[6:])
 
         elif line[:2] == 'P1':
